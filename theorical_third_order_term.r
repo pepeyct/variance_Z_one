@@ -32,29 +32,29 @@ pcf=function(t){
   1+(exp(-(t^2)/((2*sigma)^2))/(rho*sqrt(4*pi)*(sigma)))
 }
 pcfGrid=pcf(grid)
-#
+### all combinations of three grid vectors that can be used to appximate the calculas
 nn1 = ceiling((R+h.max)/bin_grid_c)
+grid_list =list(n_grid_c)
 for( i in 1:n_grid_c){
   point_u = grid_c[i]
   #
-  if(i){
-    
-  }else{
-    
-  }
-  
+  if(i >=nn1 & i <= (n_grid_c -nn1)){
+    vec_v= grid_c[(i-nn1):(i+nn1)]
+  }else{ if(i < nn1){
+    vec_v = grid_c[1:(i+nn1)]
+  } else {
+    vec_v = grid_c[(i-nn1):n_grid_c]
+  }}
+  grid_list[[i]]= t(expand.grid(point_u,vec_v,vec_v))
 }
+###################################################
+grid_list_frame = data.frame(matrix(unlist(grid_list),byrow = T,ncol = 3))
 
-
-
-
-
-
-
-grid_uv=expand.grid(grid_c,grid_c)
-grid_uv = grid_uv %>% mutate(dis=abs(Var1-Var2))
-grid_uv_mat =grid_uv[grid_uv$dis <=R+h.max,]
-grid_double_uv = expand.grid(grid_uv$Var1,grid_c)
+grid_triple_point = grid_list_frame %>% mutate(dis1 = abs(X1-X2),dis2 = abs(X1-X3),dis3 = abs(X2-X3))
+# grid_uv=expand.grid(grid_c,grid_c)
+# grid_uv = grid_uv %>% mutate(dis=abs(Var1-Var2))
+# grid_uv_mat =grid_uv[grid_uv$dis <=R+h.max,]
+# grid_double_uv = expand.grid(grid_uv$Var1,grid_c)
 
 #
 cl = makeCluster(4, type = "SOCK")
