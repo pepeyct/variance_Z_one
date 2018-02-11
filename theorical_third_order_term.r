@@ -21,7 +21,7 @@ h=0.010
 n.grid= 500
 grid=seq(0,R,length.out = n.grid)
 gridt=R/n.grid
-######   apprximate the Q1&Q2 ###############
+######   apprximate the third order calculus in variance z1 ###############
 # calculus grid
 n_grid_c = 5000
 bin_grid_c   = DT/n_grid_c 
@@ -39,9 +39,9 @@ grid_list =list(n_grid_c)
 for( i in 1:n_grid_c){
   point_u = grid_c[i]
   #
-  if(i >=nn1 & i <= (n_grid_c -nn1)){
+  if(i >nn1 & i < (n_grid_c -nn1)){
     vec_v= grid_c[(i-nn1):(i+nn1)]
-  }else{ if(i < nn1){
+  }else{ if(i <= nn1){
     vec_v = grid_c[1:(i+nn1)]
   } else {
     vec_v = grid_c[(i-nn1):n_grid_c]
@@ -67,7 +67,7 @@ calculus_cal = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopa
   grid_triple_point = grid_triple_point[grid_triple_point$w_h_1>0 & grid_triple_point$w_h_2>0,]
   # calculate the third order pair correlation fun
   g3=apply(grid_triple_point,1,function(row_Vec){integrate(f=function(p){normal_fun(p+row_Vec[1])*normal_fun(p+row_Vec[2])*normal_fun(p+row_Vec[3])},lower=0,upper=R)$value})
-  grid_triple_point = grid_triple_point %>% mutate(g3_cls = g3+pcf(dis1)+pcf(dis2)+pcf(dis3)-2,a12=(dis2-r)/h,a21=(dis1-r)/h,a22=((dis2-r)*(dis1-r))/(h^2))
+  grid_triple_point = grid_triple_point %>% mutate(g3_cls = g3/(rho^2)+pcf(dis1)+pcf(dis2)+pcf(dis3)-2,a12=(dis2-r)/h,a21=(dis1-r)/h,a22=((dis2-r)*(dis1-r))/(h^2))
   grid_triple_point = grid_triple_point %>% mutate(c11=w_h_1*w_h_2*g3_cls,c12 = a12*c11,c21 = a21*c11,c22=a22*c11)
   C_vec= colSums(grid_triple_point[,13:16])*bin_grid_c^3
   C_vec
