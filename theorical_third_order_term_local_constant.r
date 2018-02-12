@@ -69,7 +69,7 @@ calculus_cal = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopa
   g3=apply(grid_triple_point,1,function(row_Vec){integrate(f=function(p){normal_fun(p+row_Vec[1])*normal_fun(p+row_Vec[2])*normal_fun(p+row_Vec[3])},lower=-Inf,upper=Inf)$value})
   grid_triple_point = grid_triple_point %>% mutate(g3_cls = g3/(rho^2)+pcf(dis1)+pcf(dis2)+pcf(dis3)-2)
   grid_triple_point = grid_triple_point %>% mutate(c11=w_h_1*w_h_2*g3_cls)
-  C_value= sum(grid_triple_point[,13])*bin_grid_c^3
+  C_value= sum(grid_triple_point[,10])*bin_grid_c^3
   C_value
 }
 
