@@ -60,19 +60,19 @@ cl = makeCluster(2, type = "SOCK")
 registerDoSNOW(cl)
 
 ptm<-proc.time()
-calculus_cal = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopar% {
+calculus_cal_z1 = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopar% {
   r=grid[i] # each time point that pcf being estimated 
   grid_triple_point =grid_triple_point_fill %>% mutate(w_h_1 = ifelse(abs(dis1-r)<h,1/(2*h*(DT-dis1)),0),
                                                   w_h_2= ifelse(abs(dis2-r)<h,1/(2*h*(DT-dis2)),0))
   grid_triple_point = grid_triple_point[grid_triple_point$w_h_1>0 & grid_triple_point$w_h_2>0,]
   # calculate the third order pair correlation fun
-  g3=apply(grid_triple_point,1,function(row_Vec){integrate(f=function(p){normal_fun(p+row_Vec[1])*normal_fun(p+row_Vec[2])*normal_fun(p+row_Vec[3])},lower=0,upper=R)$value})
+  g3=apply(grid_triple_point,1,function(row_Vec){integrate(f=function(p){normal_fun(p+row_Vec[1])*normal_fun(p+row_Vec[2])*normal_fun(p+row_Vec[3])},lower=-Inf,upper=Inf)$value})
   grid_triple_point = grid_triple_point %>% mutate(g3_cls = g3/(rho^2)+pcf(dis1)+pcf(dis2)+pcf(dis3)-2,a12=(dis2-r)/h,a21=(dis1-r)/h,a22=((dis2-r)*(dis1-r))/(h^2))
   grid_triple_point = grid_triple_point %>% mutate(c11=w_h_1*w_h_2*g3_cls,c12 = a12*c11,c21 = a21*c11,c22=a22*c11)
   C_vec= colSums(grid_triple_point[,13:16])*bin_grid_c^3
   C_vec
 }
-save(calculus_cal,file = "calculus_cal.RData")
+save(calculus_cal_z1,file = "calculus_ca_feb11.RData")
 proc.time()-ptm
 # three order calculus
 
