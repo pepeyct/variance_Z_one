@@ -5,6 +5,8 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 ###############################################
+setwd("C:/Users/CZhao/Dropbox/Research/PairCorrelationFunction/simulation/SimulationFinal/inference/theoretical variance/variance_Z_one/variance_Z_one")
+#
 rho   = 1.0
 sigma = 0.030
 mu=6
@@ -36,7 +38,7 @@ cl = makeCluster(2, type = "SOCK")
 registerDoSNOW(cl)
 
 ptm<-proc.time()
-Q_mat_cal = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopar% {
+Q_mat_cal = foreach(i = 1:n.grid,.combine = 'rbind',.packages = c("dplyr")) %dopar% {
   r=grid[i] # each time point that pcf being estimated 
   grid_uv =grid_uv_mat %>% mutate(w_h = ifelse(abs(dis-r)<h,1/(2*h*(DT-dis)),0))
   grid_uv = grid_uv[grid_uv$w_h>0,]
@@ -57,22 +59,33 @@ pcf=function(t){
 pcfGrid=pcf(grid)
 pcf_part =2*pcfGrid*(1+pcfGrid/(m-1))
 #pcf_part =2*pcfGrid
-variance_vector=variance_vector2=rep(0,n.grid)
+variance_proof=variance_triple_z1=variance_triple_z2_cov=rep(0,n.grid)
 
-for(k in 1:50){
+for(k in 1:n.grid){
   e_Q_part =  Q2_vec[k]/((Q1_vec[k])^2)
-  variance_vector[k]=pcf_part[k]*e_Q_part
+  variance_proof[k]=pcf_part[k]*e_Q_part
 }
-variance_vector50=variance_vector[1:50]/(m*DT*h)
+variance_proof=variance_proof[1:n.grid]/(m*DT*h)
 
-for(k in 1:50){
-  e_Q_part2 =  2*calculus_cal[k]/(m*(Q1_vec[k])^2)
-  variance_vector2[k]=e_Q_part2
+load("cov_var_calculus_local_constant_feb14.RData")
+for(k in 1:n.grid){
+  e_Q_part2 =  6*calculus_cal[k]/(m*(Q1_vec[k])^2)
+  variance_triple_z2_cov[k]=e_Q_part2
 }
-variance_vector2[1:50]
+variance_triple_z2_cov[1:n.grid]
+
+load("triple_calculus_Z1_local_constant_feb14.RData")
+for(k in 1:n.grid){
+  e_Q_part3 =  4*calculus_cal[k]/(m*(Q1_vec[k])^2)
+  variance_triple_z1[k]=e_Q_part3
+}
+variance_triple_z1[1:n.grid]
 # load estimator result
-
+load("C:/Users/CZhao/Dropbox/Research/PairCorrelationFunction/simulation/SimulationFinal/simulation with selection/setting1/rho2_sigma0.030/rho=1.0/local constant/local constant estimator result.RData")
 estResult=Simu.array[5,,]
 var_lc = apply(estResult,1,var)
 
-result50= cbind(variance_vector50,var_lc[1:50])
+result= cbind(var_lc[1:n.grid],variance_proof,variance_triple_z1[1:n.grid],variance_triple_z2_cov[1:n.grid])
+colnames(result) = c("variance_simu","variance_proof","variance_triple_z1","variance_triple_z2_and_cov")
+result_combine_lc =data.frame(result) %>% mutate(variance_proof_and_triple =variance_proof+variance_triple_z1+variance_triple_z2_and_cov )
+save(result_combine_lc,file="result_combine_lc_Feb14.RData")

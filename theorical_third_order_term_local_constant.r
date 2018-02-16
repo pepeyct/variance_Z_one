@@ -60,7 +60,7 @@ cl = makeCluster(2, type = "SOCK")
 registerDoSNOW(cl)
 
 ptm<-proc.time()
-calculus_cal = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopar% {
+calculus_cal = foreach(i = 1:n.grid,.combine = 'rbind',.packages = c("dplyr")) %dopar% {
   r=grid[i] # each time point that pcf being estimated 
   grid_triple_point =grid_triple_point_fill %>% mutate(w_h_1 = ifelse(abs(dis1-r)<h,1/(2*h*(DT-dis1)),0),
                                                   w_h_2= ifelse(abs(dis2-r)<h,1/(2*h*(DT-dis2)),0))
@@ -75,6 +75,6 @@ calculus_cal = foreach(i = 1:50,.combine = 'rbind',.packages = c("dplyr")) %dopa
 
 proc.time()-ptm
 # three order calculus
-save(calculus_cal,file = "calculus_localconstant_feb12.RData")
+save(calculus_cal,file = "triple_calculus_Z1_local_constant_feb14.RData")
 
 
